@@ -7,9 +7,10 @@ import {ls} from './ls.js'
 import {cat} from './cat.js'
 import {add} from './add.js'
 import {cp} from './cp.js'
+import {mv} from './mv.js'
+import { exists } from './helpers/exists.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
+let __dirname = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const usernameArg = args.find(arg => arg.startsWith('--username='));
 const username = usernameArg ? usernameArg.split('=')[1] : 'User';
@@ -92,6 +93,15 @@ rl.on('line', async (input) => {
         const sourcePath = join(__dirname, args[0]);
         const destinationPath = join(__dirname, args[1]);
         await cp(sourcePath, destinationPath);
+      break;
+
+      case 'mv':
+        if (args.length !== 2) {
+          throw new Error('Invalid input');
+        }
+        const sourceMVPath = join(__dirname, args[0]);
+        const destinationMVPath = join(__dirname, args[1]);
+        await mv(sourceMVPath, destinationMVPath);
       break;
     }
   } catch (err) {
