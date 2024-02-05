@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import * as readline from 'node:readline';
-import { existsSync } from 'fs';
+import { readdir, stat } from 'fs/promises';
 
 let __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,42 +18,57 @@ const rl = readline.createInterface({
   prompt: '> '
 });
 
+
+async function ls() {
+  const files = await readdir(__dirname, { withFileTypes: true });
+  const fileStats = await Promise.all(
+    files.map(async (file) => {
+      const type = file.isDirectory() ? 'folder' : 'file';
+      return { Name: file.name, Type: type };
+    })
+  );
+
+  console.table(fileStats);
+}
+
 rl.prompt();
-rl.on('line', (input) => {
+rl.on('line', async (input) => {
   input = input.trim();
   const [command, ...args] = input.split(' ');
-
   try {
     switch (command) {
       case '.exit':
-        if(args.length > 0) {
+        if (args.length > 0) {
           throw new Error('Invalid input');
         }
         rl.close();
         break;
       case 'cd':
-        if(args.length === 0) { 
+        if (args.length === 0) {
           throw new Error('Invalid input');
         }
-
         const newPath = join(__dirname, ...args);
-        if (!existsSync(newPath)) {
+        if (!(await exists(newPath))) {
           throw new Error('Operation failed');
         }
         __dirname = newPath;
         break;
       case 'up':
-        if(args.length > 0) {
+        if (args.length > 0) {
           throw new Error('Invalid input');
         }
-
         __dirname = dirname(__dirname);
         break;
+      case 'ls':
+        if (args.length > 0) {
+          throw new Error('Invalid input');
+        }
+        await ls();
+        break;
     }
-  } catch(err) {
+  } catch (err) {
     console.log(err.message);
   }
-
   console.log(`You are currently in ${__dirname}`);
   rl.prompt();
 });
