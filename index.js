@@ -1,11 +1,12 @@
 import { dirname, join } from 'path';
 import * as readline from 'node:readline';
-import { readdir, stat } from 'fs/promises';
+import { rename } from 'fs/promises';
 import { createReadStream } from 'fs';
 import { fileURLToPath } from 'url';
 import {ls} from './ls.js'
 import {cat} from './cat.js'
 import {add} from './add.js'
+import {cp} from './cp.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -73,6 +74,24 @@ rl.on('line', async (input) => {
             throw new Error('Invalid input');
           }
           await add(args[0]);
+      break;
+      case 'rn':
+          if (args.length !== 2) {
+             throw new Error('Invalid input');
+          }
+        const oldFilePath = join(__dirname, args[0]);
+        const newFileName = args[1];
+        const newFilePath = join(dirname(oldFilePath), newFileName);
+        await rename(oldFilePath, newFilePath);
+      break;
+
+      case 'cp':
+        if (args.length !== 2) {
+          throw new Error('Invalid input');
+         }
+        const sourcePath = join(__dirname, args[0]);
+        const destinationPath = join(__dirname, args[1]);
+        await cp(sourcePath, destinationPath);
       break;
     }
   } catch (err) {
