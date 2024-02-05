@@ -1,7 +1,6 @@
 import { dirname, join } from 'path';
 import * as readline from 'node:readline';
-import { rename } from 'fs/promises';
-import { createReadStream } from 'fs';
+import { rename, unlink } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import {ls} from './ls.js'
 import {cat} from './cat.js'
@@ -9,6 +8,7 @@ import {add} from './add.js'
 import {cp} from './cp.js'
 import {mv} from './mv.js'
 import { exists } from './helpers/exists.js';
+import {rm} from './rm.js'
 
 let __dirname = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -103,6 +103,13 @@ rl.on('line', async (input) => {
         const destinationMVPath = join(__dirname, args[1]);
         await mv(sourceMVPath, destinationMVPath);
       break;
+      case 'rm':
+        if (args.length !== 1) {
+          throw new Error('Invalid input');
+        }
+        const path = join(__dirname, args[0]);
+        await rm(path);
+        break;
     }
   } catch (err) {
     console.log(err.message);
